@@ -22,7 +22,7 @@ class RequestMethod(StrEnum):
 class BasePermission(StrEnum):
     """
     Instead of using a string-literal to represent permission, the enum-members are recommended.
-    It was called 'hard-coding' for the first way.
+    It was called 'hard-coding' for first way.
     """
     NONE = ''
 
