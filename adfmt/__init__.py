@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-name = "adfmt"
-
-from adfmt.format import (
+from .format import (
     Formatter,
     format_class,
 )
 
-from adfmt.io import (
-    writing,
+from .enums import (
+    RequestMethod,
+    BasePermission,
 )
 
-from adfmt.params import (
+from .params import (
     update_params_map,
+    params_map_accessor,
 )
-
-writing_api_doc = writing
 
 __all__ = [
     'Formatter',
     'format_class',
-    'writing_api_doc',
+    'RequestMethod',
+    'BasePermission',
     'update_params_map',
+    'params_map_accessor',
 ]
+
+name = "adfmt"

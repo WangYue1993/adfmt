@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 .idea/
+.deploy.sh
 
 # Distribution / packaging
 .Python

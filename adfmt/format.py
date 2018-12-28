@@ -18,6 +18,7 @@ from typing import (
 from adfmt.enums import (
     ParamTyping,
     BasePermission,
+    Permission,
     ApiDoc,
     RequestMethod,
 )
@@ -136,7 +137,7 @@ class Formatter(object):
             title: str,
             group: Optional[str] = '',
             desc: Optional[str] = '',
-            perm: Optional[BasePermission] = BasePermission.NONE,
+            perm: Optional[BasePermission] = Permission.NONE,
             header: Optional[Dict] = None,
             params: Optional[Dict] = None,
             success_json: Optional[Dict] = None,

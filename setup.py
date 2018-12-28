@@ -8,13 +8,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="adfmt",
-    version="0.0.1",
+    version="0.0.4",
     author="Yue Wang",
     author_email="wangyue930203@gmail.com",
-    description="a format-tool for apiDoc",
+    description="a simple format tool for apiDoc",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/WangYue1993/adfmt",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3.5",

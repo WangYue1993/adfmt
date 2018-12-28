@@ -94,36 +94,33 @@ class SlightParam(object):
 
     def __init__(
             self,
-            collection: Dict,
+            params: Dict,
     ) -> None:
-        self._collection = collection
+        self._params = params
 
     @property
     def slim(self) -> Dict:
         self._recur_map(
             location_chain=[],
-            mapping=self._collection
+            mapping=self._params
         )
-        return self._collection
+        return self._params
 
     def _recur(
             self,
             location_chain: List,
-            key: Union[str, int],
-            value: Any,
+            child: Any,
     ) -> None:
-        if isinstance(value, dict):
-            location_chain.append(key)
+        if isinstance(child, dict):
             self._recur_map(
                 location_chain=location_chain,
-                mapping=value,
+                mapping=child,
             )
 
-        if isinstance(value, (tuple, list)):
-            location_chain.append(key)
+        if isinstance(child, (tuple, list)):
             self._recur_seq(
                 location_chain=location_chain,
-                sequence=value,
+                sequence=child,
             )
 
     def _recur_map(
@@ -132,10 +129,11 @@ class SlightParam(object):
             mapping: Dict,
     ) -> None:
         for k, v in mapping.items():
+            c = copy.deepcopy(location_chain)
+            c.append(f'"{k}"')
             self._recur(
-                location_chain=location_chain,
-                key=f'"{k}"',
-                value=v,
+                location_chain=c,
+                child=v,
             )
 
     def _recur_seq(
@@ -145,32 +143,37 @@ class SlightParam(object):
     ) -> None:
         if sequence:
             single = sequence[:1]
+            c = copy.deepcopy(location_chain)
+
+            self._recur(
+                location_chain=c,
+                child=single[0],
+            )
 
             self.__replace_to_single(
-                location_chain=location_chain,
+                location_chain=c,
                 single=single,
             )
 
-            self._recur(
-                location_chain=location_chain,
-                key=0,
-                value=single[0],
-            )
 
     def __replace_to_single(
             self,
             location_chain: List,
             single: Sequence,
     ) -> Any:
-        c = copy.deepcopy(self._collection)
+        p = copy.deepcopy(self._params)
 
         # generate a get-item expression by location-chain
-        get_exp = 'c' + ''.join([f'[{key}]' for key in location_chain])
+        get_exp = 'p' + ''.join([f'[{key}]' for key in location_chain])
         # set a new single sequence to collection
         set_exp = f'{get_exp} = {single}'
+        print(get_exp, location_chain, set_exp)
         exec(set_exp)
 
-        self._collection = c
+        self._params = p
+
+
+PARAMS_MAP = {}
 
 
 def params_map_accessor(key: str) -> str:
@@ -182,6 +185,3 @@ def update_params_map(
         **kwargs,
 ) -> None:
     PARAMS_MAP.update(kwargs)
-
-
-PARAMS_MAP = {}
