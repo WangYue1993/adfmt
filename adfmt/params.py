@@ -178,4 +178,10 @@ def params_map_accessor(key: str) -> str:
     return v
 
 
+def update_params_map(
+        **kwargs,
+) -> None:
+    PARAMS_MAP.update(kwargs)
+
+
 PARAMS_MAP = {}

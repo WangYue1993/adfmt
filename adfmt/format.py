@@ -22,7 +22,7 @@ from adfmt.enums import (
     RequestMethod,
 )
 
-from .params import (
+from adfmt.params import (
     NestParam,
     SlightParam,
     params_map_accessor,
@@ -48,7 +48,6 @@ def format_class(
 
 
 def lines_from_join(rows: Iterable) -> str:
-    rows.sort(key=lambda x: x)
     return '\n'.join(rows)
 
 
