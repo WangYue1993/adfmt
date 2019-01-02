@@ -11,6 +11,12 @@ from typing import (
 
 import copy
 
+__all__ = [
+    'NestParam',
+    'SlightParam',
+    'ParamsMap',
+]
+
 
 class NestParam(object):
     """
@@ -19,10 +25,11 @@ class NestParam(object):
 
     NestParam will convert 'nest' to 'simple'.
 
-    The param name will become a complete-layer-location meanwhile.
-    That means expanding a relative-name into a complete-name.
+    During converting:
+        > The param name will become a complete-layer-location,
+          That means expanding a relative-name into a complete-name.
 
-    The value of param will be replaced by an init-typing value of itself.
+        > Value of param will be replaced by an init-typing value of itself.
 
     eg:
     >>> p = NestParam({'mike': {'name': 'mike', 'score': [{'math': 90, 'eng': 85}]}})
@@ -110,16 +117,48 @@ class SlightParam(object):
             self,
             location_chain: List,
             child: Any,
+            key: Union[str, int],
     ) -> None:
+        """
+        `location_chain` save 'key' and 'order of get item' for collection.
+
+        In python, both collections <Dict> and <List> have the special methods `__getitem__` and `__setitem__`.
+
+        It makes the collection easy to get item and set item,
+        through square brackets of symbol (`[]`) enclosing a key or index.
+        eg:
+        >>> a = {'a': 'a'}
+        >>> a['a']
+        'a'
+        >>> a['b'] = 'b'
+        >>> a
+        {'a': 'a', 'b': 'b'}
+        >>> b = [1, 2, 3]
+        >>> b[0]
+        1
+        >>> b[0] = 2
+        >>> b
+        [2, 2, 3]
+        >>>
+
+        Thus, `location_chain` can be used to make up the expression of setting item or getting item.
+
+        Additionally, a deepcopy (clone a same object) location_chain is required for every child element.
+        It can guarantee the child element own the `location_chain` of itself, and remove interference from each other.
+        """
         if isinstance(child, dict):
+            c = copy.deepcopy(location_chain)
+            c.append(key)
             self._recur_map(
-                location_chain=location_chain,
+                location_chain=c,
                 mapping=child,
             )
 
         if isinstance(child, (tuple, list)):
+            c = copy.deepcopy(location_chain)
+            c.append(key)
             self._recur_seq(
-                location_chain=location_chain,
+                location_chain=c,
                 sequence=child,
             )
 
@@ -129,11 +168,11 @@ class SlightParam(object):
             mapping: Dict,
     ) -> None:
         for k, v in mapping.items():
-            c = copy.deepcopy(location_chain)
-            c.append(f'"{k}"')
+            key = f'"{k}"'
             self._recur(
-                location_chain=c,
+                location_chain=location_chain,
                 child=v,
+                key=key,
             )
 
     def _recur_seq(
@@ -143,18 +182,17 @@ class SlightParam(object):
     ) -> None:
         if sequence:
             single = sequence[:1]
-            c = copy.deepcopy(location_chain)
-
-            self._recur(
-                location_chain=c,
-                child=single[0],
-            )
 
             self.__replace_to_single(
-                location_chain=c,
+                location_chain=location_chain,
                 single=single,
             )
 
+            self._recur(
+                location_chain=location_chain,
+                child=single[0],
+                key=0,
+            )
 
     def __replace_to_single(
             self,
@@ -167,21 +205,20 @@ class SlightParam(object):
         get_exp = 'p' + ''.join([f'[{key}]' for key in location_chain])
         # set a new single sequence to collection
         set_exp = f'{get_exp} = {single}'
-        print(get_exp, location_chain, set_exp)
         exec(set_exp)
 
         self._params = p
 
 
-PARAMS_MAP = {}
+class ParamsMap(dict):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
 
-def params_map_accessor(key: str) -> str:
-    v = PARAMS_MAP.get(key, 'ready to fill in ...')
-    return v
-
-
-def update_params_map(
-        **kwargs,
-) -> None:
-    PARAMS_MAP.update(kwargs)
+    def __setattr__(self, key, value):
+        self[key] = value

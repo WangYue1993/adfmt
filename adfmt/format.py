@@ -7,7 +7,6 @@ import functools
 
 from typing import (
     Any,
-    List,
     Dict,
     Sequence,
     Callable,
@@ -15,7 +14,7 @@ from typing import (
     Iterable,
 )
 
-from adfmt.enums import (
+from .enums import (
     ParamTyping,
     BasePermission,
     Permission,
@@ -23,17 +22,24 @@ from adfmt.enums import (
     RequestMethod,
 )
 
-from adfmt.params import (
+from .params import (
     NestParam,
     SlightParam,
-    params_map_accessor,
+    ParamsMap,
 )
 
-json_dumps_cn: Callable[[Any], str] = functools.partial(
+__all__ = [
+    'format_class',
+    'Formatter',
+]
+
+_json_dumps_cn: Callable[[Any], str] = functools.partial(
     json.dumps,
     indent=4,
     ensure_ascii=False,
 )
+
+_DOC_FMT_PATTERN = re.compile(r'^(@.+{[A-Za-z]+})\s([\w.]+)\s(.+)$')
 
 
 def format_class(
@@ -48,29 +54,22 @@ def format_class(
     return content
 
 
-def lines_from_join(rows: Iterable) -> str:
+def _lines_from_join(rows: Iterable) -> str:
     return '\n'.join(rows)
 
 
-def lines_with_indent(
+def _lines_with_indent(
         content: str,
         indent: Optional[int] = 4,
 ) -> str:
     rows = content.split('\n')
     indent_rows = [f'{" " * indent}{r}' for r in rows]
-    c = lines_from_join(indent_rows)
+    c = _lines_from_join(indent_rows)
 
     return c
 
 
-def path_of_separate(
-        path: str,
-        operator: str = '/',
-) -> List[str]:
-    return path.strip(operator).split(operator)
-
-
-def typing_by_check(
+def _typing_by_check(
         param: Any,
 ) -> ParamTyping:
     v = param
@@ -95,14 +94,15 @@ def typing_by_check(
     return t
 
 
-def format_params(
+def _format_params(
         params: Dict,
         formatter: ApiDoc,
+        mapping: ParamsMap,
 ) -> str:
     parts = []
     for param, value in params.items():
-        typing = typing_by_check(value)
-        explain = params_map_accessor(param)
+        typing = _typing_by_check(value)
+        explain = mapping.get(param, 'ready to fill in')
 
         f = formatter.param(typing, param, explain)
 
@@ -110,18 +110,18 @@ def format_params(
             parts.append(f)
 
     # sort by regex. the key-words is the param's name.
-    parts.sort(key=lambda x: re.match(r'^(@.+{[A-Za-z]+})\s([\w.]+)\s(.+)$', x).group(2))
-    fmt = lines_from_join(parts)
+    parts.sort(key=lambda x: re.match(_DOC_FMT_PATTERN, x).group(2))
+    fmt = _lines_from_join(parts)
     return fmt
 
 
-def format_example(
+def _format_example(
         obj: Any,
         formatter: ApiDoc,
 ) -> str:
     if obj:
-        s = json_dumps_cn(obj)
-        lines = lines_with_indent(s)
+        s = _json_dumps_cn(obj)
+        lines = _lines_with_indent(s)
         fmt = formatter.example(content=lines)
         return fmt
     else:
@@ -138,6 +138,7 @@ class Formatter(object):
             group: Optional[str] = '',
             desc: Optional[str] = '',
             perm: Optional[BasePermission] = Permission.NONE,
+            mapping: Optional[ParamsMap] = None,
             header: Optional[Dict] = None,
             params: Optional[Dict] = None,
             success_json: Optional[Dict] = None,
@@ -151,6 +152,7 @@ class Formatter(object):
         self._desc = desc
         self._group = group
         self._perm = perm
+        self._map = mapping
         self._header = header or {}
         self._params = params or {}
         self._error_json = error_json or {}
@@ -167,11 +169,11 @@ class Formatter(object):
     @property
     def doc(self) -> str:
         raw = self._func_statement() + '\n' + self._annotations()
-        fmt = lines_with_indent(raw)
+        fmt = _lines_with_indent(raw)
         return fmt
 
     def _func_statement(self) -> str:
-        parts = path_of_separate(self._path)
+        parts = self._path.strip('/').split('/')
         parts.append(self._method.value)
 
         name = '_'.join(parts)
@@ -197,8 +199,8 @@ class Formatter(object):
         ]
 
         check_parts = filter(lambda x: x, parts)
-        rows = lines_from_join(check_parts)
-        fmt = lines_with_indent(rows)
+        rows = _lines_from_join(check_parts)
+        fmt = _lines_with_indent(rows)
 
         return fmt
 
@@ -230,15 +232,16 @@ class Formatter(object):
 
     def _fmt_header(self) -> str:
         p = self._header
-        fmt = format_params(
+        fmt = _format_params(
             params=p,
             formatter=ApiDoc.HEADER,
+            mapping=self._map,
         )
         return fmt
 
     def _fmt_header_eg(self) -> str:
         o = self._header
-        fmt = format_example(
+        fmt = _format_example(
             obj=o,
             formatter=ApiDoc.HEADER,
         )
@@ -246,15 +249,16 @@ class Formatter(object):
 
     def _fmt_params(self) -> str:
         p = self._params
-        fmt = format_params(
+        fmt = _format_params(
             params=p,
             formatter=ApiDoc.PARAM,
+            mapping=self._map,
         )
         return fmt
 
     def _fmt_params_eg(self) -> str:
         o = self._params
-        fmt = format_example(
+        fmt = _format_example(
             obj=o,
             formatter=ApiDoc.PARAM,
         )
@@ -262,15 +266,16 @@ class Formatter(object):
 
     def _fmt_success(self) -> str:
         p = self._success_params
-        fmt = format_params(
+        fmt = _format_params(
             params=p,
             formatter=ApiDoc.SUCCESS,
+            mapping=self._map,
         )
         return fmt
 
     def _fmt_success_eg(self) -> str:
         o = self._success_json
-        fmt = format_example(
+        fmt = _format_example(
             obj=o,
             formatter=ApiDoc.SUCCESS,
         )
@@ -278,15 +283,16 @@ class Formatter(object):
 
     def _fmt_error(self) -> str:
         p = self._error_params
-        fmt = format_params(
+        fmt = _format_params(
             params=p,
             formatter=ApiDoc.ERROR,
+            mapping=self._map,
         )
         return fmt
 
     def _fmt_error_eg(self) -> str:
         o = self._error_json
-        fmt = format_example(
+        fmt = _format_example(
             obj=o,
             formatter=ApiDoc.ERROR,
         )

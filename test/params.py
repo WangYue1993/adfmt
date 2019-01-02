@@ -4,8 +4,7 @@
 from adfmt.params import (
     NestParam,
     SlightParam,
-    update_params_map,
-    params_map_accessor,
+    ParamsMap,
 )
 
 
@@ -79,44 +78,50 @@ def test_nest_param() -> None:
 def test_slight_param() -> None:
     p = {}
 
-    # s1 = SlightParam(params=p)
-    # assert s1.slim == {}
+    s1 = SlightParam(params=p)
+    assert s1.slim == {}
 
     p.update(a=[1, 2, 3])
-    # s2 = SlightParam(params=p)
-    # assert s2.slim == {'a': [1]}
+    s2 = SlightParam(params=p)
+    assert s2.slim == {'a': [1]}
 
     p.update(b=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     s3 = SlightParam(params=p)
-    print('s3:', s3.slim)
     assert s3.slim == {
         'a': [1],
         'b': [[1]],
     }
 
-    p.update(c=[dict(c1='c1', c2=2), dict(c3='c3', c4=4)])
+    p.update(c=[dict(c1='c1', c2=[1, 2]), dict(c3='c3', c4=[3, 4])])
     s4 = SlightParam(params=p)
     assert s4.slim == {
         'a': [1],
-        'b': [1, 2, 3],
-        'c': [{'c1': 'c1', 'c2': 2}]
+        'b': [[1]],
+        'c': [{'c1': 'c1', 'c2': [1]}],
+    }
+
+    p.update(d=dict(d1={'d11': 'd11'}, d2=[[dict(d22='d22', d33=[1, 2, 3]), dict(d44='d44', d55=[4, 5, 6])]]))
+    s5 = SlightParam(params=p)
+    assert s5.slim == {
+        'a': [1],
+        'b': [[1]],
+        'c': [{'c1': 'c1', 'c2': [1]}],
+        'd': {
+            'd1': {'d11': 'd11'},
+            'd2': [[{'d22': 'd22', 'd33': [1]}]],
+        },
     }
 
 
-def test_params_map_accessor() -> None:
-    good = params_map_accessor(key='good')
-    assert good == 'ready to fill in ...'
+def test_params_map() -> None:
+    p = ParamsMap(test='test')
+    assert p.test == 'test'
 
-
-def test_update_params_map() -> None:
-    update_params_map(good='good')
-
-    good = params_map_accessor('good')
-    assert good == 'good'
+    p.good = 'good'
+    assert p.good == 'good'
 
 
 if __name__ == '__main__':
     test_nest_param()
     test_slight_param()
-    test_params_map_accessor()
-    test_update_params_map()
+    test_params_map()

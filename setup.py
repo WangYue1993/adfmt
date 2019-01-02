@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="adfmt",
-    version="0.0.4",
+    version="0.0.5",
     author="Yue Wang",
     author_email="wangyue930203@gmail.com",
     description="a simple format tool for apiDoc",

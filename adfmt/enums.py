@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from enum import (
-    Enum,
-)
+from enum import Enum
+
+__all__ = [
+    'RequestMethod',
+    'BasePermission',
+    'Permission',
+    'ParamTyping',
+    'ApiDoc',
+]
 
 
-class StrEnum(str, Enum):
+class _StrEnum(str, Enum):
     pass
 
 
-class RequestMethod(StrEnum):
+class RequestMethod(_StrEnum):
     GET = 'get'
     POST = 'post'
 
@@ -19,7 +25,7 @@ class RequestMethod(StrEnum):
         return '{%s}' % self.value
 
 
-class BasePermission(StrEnum):
+class BasePermission(_StrEnum):
     """
     Instead of using a string-literal to represent permission, the enum-members are recommended.
     It was called 'hard-coding' for first way.
@@ -30,11 +36,12 @@ class BasePermission(StrEnum):
         return self.value
 
 
-class Permission(StrEnum):
+class Permission(_StrEnum):
     NONE = ''
+    ADMIN = 'User admin is required'
 
 
-class ParamTyping(StrEnum):
+class ParamTyping(_StrEnum):
     STR = 'String'
     NUM = 'Number'
     BOOL = 'Boolean'
@@ -46,7 +53,7 @@ class ParamTyping(StrEnum):
         return '{%s}' % self.value
 
 
-class ApiDoc(StrEnum):
+class ApiDoc(_StrEnum):
     # api
     DECLARE = '@api'
 
