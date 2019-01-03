@@ -25,7 +25,6 @@ from .enums import (
 from .params import (
     NestParam,
     SlightParam,
-    ParamsMap,
 )
 
 __all__ = [
@@ -97,7 +96,7 @@ def _typing_by_check(
 def _format_params(
         params: Dict,
         formatter: ApiDoc,
-        mapping: ParamsMap,
+        mapping: Dict,
 ) -> str:
     parts = []
     for param, value in params.items():
@@ -109,7 +108,7 @@ def _format_params(
         if f not in parts:
             parts.append(f)
 
-    # sort by regex. the key-words is the param's name.
+    # sorted by regex, key is the name of param which describes absolute location of param.
     parts.sort(key=lambda x: re.match(_DOC_FMT_PATTERN, x).group(2))
     fmt = _lines_from_join(parts)
     return fmt
@@ -138,7 +137,7 @@ class Formatter(object):
             group: Optional[str] = '',
             desc: Optional[str] = '',
             perm: Optional[BasePermission] = Permission.NONE,
-            mapping: Optional[ParamsMap] = None,
+            mapping: Optional[Dict] = None,
             header: Optional[Dict] = None,
             params: Optional[Dict] = None,
             success_json: Optional[Dict] = None,
@@ -152,7 +151,7 @@ class Formatter(object):
         self._desc = desc
         self._group = group
         self._perm = perm
-        self._map = mapping
+        self._map = mapping or {}
         self._header = header or {}
         self._params = params or {}
         self._error_json = error_json or {}
