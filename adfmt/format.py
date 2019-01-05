@@ -40,16 +40,17 @@ _json_dumps_cn: Callable[[Any], str] = functools.partial(
 
 _DOC_FMT_PATTERN = re.compile(r'^(@.+{[A-Za-z]+})\s([\w.]+)\s(.+)$')
 
+_URL_PATH_PART = re.compile(r'^[A-Za-z0-9]+$')
+
 
 def format_class(
         name: str,
         methods: Sequence[str],
 ) -> str:
-    annotation = '#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n\n'
     statement = f'class ApiDoc{name}(object):'
     body = '\n\n    @staticmethod\n'.join(set(methods))
 
-    content = annotation + statement + body
+    content = statement + body
     return content
 
 
@@ -173,9 +174,10 @@ class Formatter(object):
 
     def _func_statement(self) -> str:
         parts = self._path.strip('/').split('/')
-        parts.append(self._method.value)
+        normals = list(filter(lambda p: re.match(_URL_PATH_PART, p), parts))
+        normals.append(self._method.value)
 
-        name = '_'.join(parts)
+        name = '_'.join(normals)
         fmt = f'def {name}() -> None:'
         return fmt
 

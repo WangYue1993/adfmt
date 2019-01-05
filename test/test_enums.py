@@ -9,6 +9,7 @@ from adfmt.enums import (
     ParamTyping,
     ApiDoc,
 )
+from adfmt.format import faa
 
 
 def test_request_method() -> None:
