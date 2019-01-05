@@ -186,6 +186,15 @@ class DocUnit(object):
             self,
             directory: str,
     ) -> None:
+        """
+        It's hard to keep a balance between design of original intention and developer custom,
+        so the simplest way is 'do nothing'.
+
+        That means design an original and simple way of using with none of predicting to what and how user using it.
+
+        :param directory: instead of relative path, a real folder path is required.
+        :return:
+        """
         annotation = '#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n\n'
         code = self.output
         content = annotation + code

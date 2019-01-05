@@ -144,7 +144,10 @@ class SlightParam(object):
         Thus, `location_chain` can be used to make up the expression of setting item or getting item.
 
         Additionally, a deepcopy (clone a same object) of `location_chain` is required for every child element.
-        It can guarantee the child element own the `location_chain` of itself, and escape interference from each other.
+        It can guarantee every child element own the `location_chain` itself, and escape interference from each other.
+
+        Without doing that, the shared `location_chain` which every element can change will be mess,
+        and it may bring an unexpected result or an error.
         """
         if isinstance(child, dict):
             c = copy.deepcopy(location_chain)
