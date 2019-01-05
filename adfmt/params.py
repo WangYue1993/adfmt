@@ -21,13 +21,13 @@ __all__ = [
 class NestParam(object):
     """
     Assume params (mapping) is a nest collection, which some child-elements are collections too.
-    It's not 'friendly' for apiDoc, a simple mapping (none nest-collection elements) is expected.
+    It's not 'friendly' for apiDoc, however a simple mapping (none nest-collection exist) is expected.
 
-    NestParam will convert 'nest' to 'simple'.
+    The `NestParam` will convert 'nest' to 'simple'.
 
     During converting:
         > The param name will become a complete-layer-location,
-          That means expanding a relative-name into a complete-name.
+          which means expanding a relative-name into a complete-name.
 
         > Value of param will be replaced by an init-typing value of itself.
 
