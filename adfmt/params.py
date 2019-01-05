@@ -90,7 +90,7 @@ class SlightParam(object):
     Sometime, the response-params are complicated.
     Lots of child elements repeated with a same construct or a same typing-value confused the developer to look up.
 
-    So complicated-params should be 'slim', which removing the repeated elements.
+    So complicated-params should be 'slim', which means removing the repeated elements.
 
     eg:
     >>> p = SlightParam({'books': ['b1', 'b2', 'b3', ...]})
@@ -125,7 +125,7 @@ class SlightParam(object):
         In python, both collections <Dict> and <List> have the special methods `__getitem__` and `__setitem__`.
 
         It makes the collection easy to get item and set item,
-        through square brackets of symbol (`[]`) enclosing a key or index.
+        through square brackets of symbol `[key]` enclosing a key (index).
         eg:
         >>> a = {'a': 'a'}
         >>> a['a']
@@ -143,8 +143,8 @@ class SlightParam(object):
 
         Thus, `location_chain` can be used to make up the expression of setting item or getting item.
 
-        Additionally, a deepcopy (clone a same object) location_chain is required for every child element.
-        It can guarantee the child element own the `location_chain` of itself, and remove interference from each other.
+        Additionally, a deepcopy (clone a same object) of `location_chain` is required for every child element.
+        It can guarantee the child element own the `location_chain` of itself, and escape interference from each other.
         """
         if isinstance(child, dict):
             c = copy.deepcopy(location_chain)
