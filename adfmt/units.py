@@ -21,6 +21,14 @@ from .enums import (
     Permission,
 )
 
+__all__ = [
+    'DocUnit',
+]
+
+
+class InvalidValueError(Exception):
+    pass
+
 
 class DocUnit(object):
 
@@ -35,8 +43,18 @@ class DocUnit(object):
             error_json: Optional[Dict] = None,
             error_params: Optional[Dict] = None,
     ) -> None:
+        if not isinstance(name, str) or name == '':
+            raise InvalidValueError(
+                'Parameter `name` should be a string except "".'
+            )
         self._name = name
+
+        if not isinstance(domain, str):
+            raise InvalidValueError(
+                'Parameter `domain` should be a string.'
+            )
         self._domain = domain
+
         self._group = group
         self._perm = perm
         self._mapping = mapping
@@ -177,8 +195,11 @@ class DocUnit(object):
 
     @property
     def output(self) -> str:
-        statement = f'class ApiDoc{self._name}(object):'
+        case_name = _camel_cased_word(self._name)
+
+        statement = f'class ApiDoc{case_name}(object):'
         body = '\n\n    @staticmethod\n'.join(set(self._doc_methods))
+
         code = statement + body
         return code
 
@@ -192,7 +213,7 @@ class DocUnit(object):
 
         That means design an original and simple way of using with none of predicting to what and how user using it.
 
-        :param directory: instead of relative path, a real folder path is required.
+        :param directory: instead of taking a relative path, an absolute folder path is required.
         :return:
         """
         annotation = '#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n\n'
@@ -202,3 +223,7 @@ class DocUnit(object):
         path = os.path.join(directory, f'{self._name}.py')
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
+
+
+def _camel_cased_word(word: str) -> str:
+    return word[0].upper() + word[1:]

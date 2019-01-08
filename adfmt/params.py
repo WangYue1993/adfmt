@@ -17,6 +17,8 @@ __all__ = [
     'ParamsMap',
 ]
 
+class MappingError(Exception):
+    pass
 
 class NestParam(object):
     """
@@ -42,7 +44,12 @@ class NestParam(object):
             self,
             params: Dict,
     ) -> None:
+        if not isinstance(params, dict):
+            raise MappingError(
+                'Parameter `params` expected a "dict", but other was given.'
+            )
         self._nest = params
+
         self._single = {}
 
     @property
@@ -103,6 +110,10 @@ class SlightParam(object):
             self,
             params: Dict,
     ) -> None:
+        if not isinstance(params, dict):
+            raise MappingError(
+                'Parameter `params` expected a "dict", but other was given.'
+            )
         self._params = params
 
     @property

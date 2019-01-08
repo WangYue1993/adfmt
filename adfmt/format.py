@@ -128,6 +128,10 @@ def _format_example(
         return ''
 
 
+class EnumMemberError(Exception):
+    pass
+
+
 class Formatter(object):
 
     def __init__(
@@ -147,11 +151,23 @@ class Formatter(object):
             error_params: Optional[Dict] = None,
     ) -> None:
         self._path = path
+
+        if not isinstance(method, RequestMethod):
+            raise EnumMemberError(
+                f'Parameter `perm` expected an {RequestMethod} member, but other was given.'
+            )
         self._method = method
+
         self._title = title
         self._desc = desc
         self._group = group
+
+        if not isinstance(perm, BasePermission):
+            raise EnumMemberError(
+                f'Parameter `perm` expected an {BasePermission} member or inherit, but other was given.'
+            )
         self._perm = perm
+
         self._map = mapping or {}
         self._header = header or {}
         self._params = params or {}
