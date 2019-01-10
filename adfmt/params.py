@@ -26,7 +26,7 @@ class NestParam(object):
     """
     Usually params (mapping) the api returned is a nest collection,
     which some child-elements may be collections too.
-    
+
     It's not 'friendly' for writing apiDoc,
     the complicated layer location of all params need to writing manually.
 
@@ -34,7 +34,7 @@ class NestParam(object):
 
     During converting:
         > The param name will become a complete-layer-location,
-          which means expanding a relative-name into a complete-name.
+          which expanding a relative-name into a complete-name.
 
         > Value of param will be replaced by a default-typing-value for itself.
 
