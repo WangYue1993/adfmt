@@ -17,13 +17,18 @@ __all__ = [
     'ParamsMap',
 ]
 
+
 class MappingError(Exception):
     pass
 
+
 class NestParam(object):
     """
-    Assume params (mapping) is a nest collection, which some child-elements are collections too.
-    It's not 'friendly' for apiDoc, however a simple mapping (none nest-collection exist) is expected.
+    Usually params (mapping) the api returned is a nest collection,
+    which some child-elements may be collections too.
+    
+    It's not 'friendly' for writing apiDoc,
+    the complicated layer location of all params need to writing manually.
 
     The `NestParam` will convert 'nest' to 'simple'.
 
@@ -31,7 +36,7 @@ class NestParam(object):
         > The param name will become a complete-layer-location,
           which means expanding a relative-name into a complete-name.
 
-        > Value of param will be replaced by an init-typing value of itself.
+        > Value of param will be replaced by a default-typing-value for itself.
 
     eg:
     >>> p = NestParam({'mike': {'name': 'mike', 'score': [{'math': 90, 'eng': 85}]}})
