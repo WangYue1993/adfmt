@@ -3,8 +3,8 @@
 """
 In the beginning, all of enum members name were written in uppercase letters.
 
-The reason for using uppercase letters which given on Python enum's doc is that make it easily to distinguish difference
-between member of enumerations and method.
+The reason for using uppercase letters which given on Python enum's doc is that making it easily to distinguish difference
+between members of enumerations and methods of enum class.
 
 However, you may want to declare a name with rich expression sometime.
 
