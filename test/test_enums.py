@@ -12,69 +12,69 @@ from adfmt.enums import (
 
 
 def test_request_method() -> None:
-    get = RequestMethod.GET
+    get = RequestMethod.Get
     assert get.format == '{get}'
 
-    post = RequestMethod.POST
+    post = RequestMethod.Post
     assert post.format == '{post}'
 
 
 class CustomPermission(BasePermission):
-    ADMIN = 'User admin'
-    NONE = ''
+    Admin = 'User admin'
+    Nothing = ''
 
 
 def test_inherit_permission() -> None:
-    admin = CustomPermission.ADMIN
+    admin = CustomPermission.Admin
     assert admin.explain == 'User admin'
 
-    none = CustomPermission.NONE
+    none = CustomPermission.Nothing
     assert none.explain == ''
 
 
 def test_param_typing() -> None:
-    string = ParamTyping.STR
+    string = ParamTyping.Str
     assert string.format == '{String}'
 
-    array = ParamTyping.LIST
+    array = ParamTyping.List
     assert array.format == '{Array}'
 
-    number = ParamTyping.NUM
+    number = ParamTyping.Num
     assert number.format == '{Number}'
 
-    obj = ParamTyping.OBJ
+    obj = ParamTyping.Obj
     assert obj.format == '{Object}'
 
-    boolean = ParamTyping.BOOL
+    boolean = ParamTyping.Bool
     assert boolean.format == '{Boolean}'
 
 
 def test_api_doc() -> None:
-    declare = ApiDoc.DECLARE
+    declare = ApiDoc.Declare
     assert declare.statement(
-        method=RequestMethod.POST,
+        method=RequestMethod.Post,
         path='/test',
         title='test',
     ) == '@api {post} /test test'
 
-    perm = ApiDoc.PERM
+    perm = ApiDoc.Perm
     assert perm.instruction(
-        permit=CustomPermission.ADMIN,
+        permit=CustomPermission.Admin,
     ) == '@apiPermission admin User admin'
 
-    group = ApiDoc.GROUP
+    group = ApiDoc.Group
     assert group.explain(
         content='test',
     ) == '@apiGroup test'
 
-    desc = ApiDoc.DESC
+    desc = ApiDoc.Desc
     assert desc.explain(
         content='test',
     ) == '@apiDescription test'
 
-    header = ApiDoc.HEADER
+    header = ApiDoc.Header
     assert header.param(
-        typing=ParamTyping.STR,
+        typing=ParamTyping.Str,
         name='test',
         explain='param: test',
     ) == '@apiHeader {String} test param: test'
@@ -82,9 +82,9 @@ def test_api_doc() -> None:
         content=json.dumps(dict(test='test')),
     ) == '@apiHeaderExample {json} header-example\n%s' % json.dumps(dict(test='test'))
 
-    param = ApiDoc.PARAM
+    param = ApiDoc.Param
     assert param.param(
-        typing=ParamTyping.NUM,
+        typing=ParamTyping.Num,
         name='test',
         explain='param: test',
     ) == '@apiParam {Number} test param: test'
@@ -92,9 +92,9 @@ def test_api_doc() -> None:
         content=json.dumps(dict(test='test')),
     ) == '@apiParamExample {json} param-example\n%s' % json.dumps(dict(test='test'))
 
-    success = ApiDoc.SUCCESS
+    success = ApiDoc.Success
     assert success.param(
-        typing=ParamTyping.BOOL,
+        typing=ParamTyping.Bool,
         name='test',
         explain='success: test',
     ) == '@apiSuccess {Boolean} test success: test'
@@ -102,9 +102,9 @@ def test_api_doc() -> None:
         content=json.dumps(dict(test='test')),
     ) == '@apiSuccessExample {json} success-example\n%s' % json.dumps(dict(test='test'))
 
-    error = ApiDoc.ERROR
+    error = ApiDoc.Error
     assert error.param(
-        typing=ParamTyping.LIST,
+        typing=ParamTyping.List,
         name='test',
         explain='error: test',
     ) == '@apiError {Array} test error: test'

@@ -1,5 +1,50 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+In the beginning, all of enum members name were written in uppercase letters.
+
+The reason for using uppercase letters which given on Python enum's doc is that make it easily to distinguish difference
+between member of enumerations and method.
+
+However, you may want to declare a name with rich expression sometime.
+
+For example:
+```
+>>> # ver.1
+>>> class Color(Enum):
+...     RED = 1
+...     GREEN = 2
+...     BLUE = 3
+>>>
+>>> red = Color.RED
+>>>
+>>> # You may want add other colors.
+>>> # And you should using uppercase.
+>>> # ver.2
+>>> class Color(Enum):
+...     RED = 1
+...     GREEN = 2
+...     BLUE = 3
+...     LIGHT_RED = 4   # it looks a little different
+>>>
+>>> light_red = Color.LIGHT_RED
+```
+
+The name of lightly red color is written by all uppercase words, it is similar to the convention of constant.
+For Python Code Style Guide, I think it may be the reason why using uppercase is that
+enum is very similar to constant and more safe than constant, so it should use the similar style guide with constant.
+
+But, enum is enum, not constant.
+We can easily distinguish name of enum class, constant and variable,
+the only problem is that how we can make a difference between enum members and enum class' methods.
+
+There are many ways to solve it, the simple way is using 'Pascal Case' but not 'Upper Case' for enum member name.
+
+The 'Pascal Case' word has stronger readability than 'Upper Case' word.
+eg: `ConstantConvention` vs `CONSTANT_CONVENTION`.
+
+And I think it will reduce consuming of energy with typing code. :)
+"""
 
 from enum import Enum
 
@@ -17,8 +62,8 @@ class _StrEnum(str, Enum):
 
 
 class RequestMethod(_StrEnum):
-    GET = 'get'
-    POST = 'post'
+    Get = 'get'
+    Post = 'post'
 
     @property
     def format(self) -> str:
@@ -36,17 +81,17 @@ class BasePermission(_StrEnum):
         return self.value
 
 
-class Permission(_StrEnum):
-    NONE = ''
-    ADMIN = 'User admin is required'
+class Permission(BasePermission):
+    Nothing = ''
+    Admin = 'User admin is required'
 
 
 class ParamTyping(_StrEnum):
-    STR = 'String'
-    NUM = 'Number'
-    BOOL = 'Boolean'
-    OBJ = 'Object'
-    LIST = 'Array'
+    Str = 'String'
+    Num = 'Number'
+    Bool = 'Boolean'
+    Obj = 'Object'
+    List = 'Array'
 
     @property
     def format(self) -> str:
@@ -55,7 +100,7 @@ class ParamTyping(_StrEnum):
 
 class ApiDoc(_StrEnum):
     # api
-    DECLARE = '@api'
+    Declare = '@api'
 
     def statement(
             self,
@@ -72,7 +117,7 @@ class ApiDoc(_StrEnum):
         return ' '.join(f)
 
     # permission
-    PERM = '@apiPermission'
+    Perm = '@apiPermission'
 
     def instruction(
             self,
@@ -86,8 +131,8 @@ class ApiDoc(_StrEnum):
         return ' '.join(f)
 
     # explain
-    GROUP = '@apiGroup'
-    DESC = '@apiDescription'
+    Group = '@apiGroup'
+    Desc = '@apiDescription'
 
     def explain(
             self,
@@ -99,10 +144,10 @@ class ApiDoc(_StrEnum):
             return ''
 
     # params
-    HEADER = '@apiHeader'
-    PARAM = '@apiParam'
-    SUCCESS = '@apiSuccess'
-    ERROR = '@apiError'
+    Header = '@apiHeader'
+    Param = '@apiParam'
+    Success = '@apiSuccess'
+    Error = '@apiError'
 
     def example(
             self,

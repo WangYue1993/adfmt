@@ -8,6 +8,7 @@ import functools
 from typing import (
     Any,
     Dict,
+    List,
     Sequence,
     Callable,
     Optional,
@@ -74,22 +75,22 @@ def _typing_by_check(
 ) -> ParamTyping:
     v = param
     if v is True or v is False:
-        t = ParamTyping.BOOL
+        t = ParamTyping.Bool
 
     elif isinstance(v, (int, float)):
-        t = ParamTyping.NUM
+        t = ParamTyping.Num
 
     elif isinstance(v, str):
-        t = ParamTyping.STR
+        t = ParamTyping.Str
 
     elif isinstance(v, (list, tuple, set)):
-        t = ParamTyping.LIST
+        t = ParamTyping.List
 
     elif isinstance(v, dict):
-        t = ParamTyping.OBJ
+        t = ParamTyping.Obj
 
     else:
-        t = ParamTyping.OBJ
+        t = ParamTyping.Obj
 
     return t
 
@@ -109,10 +110,18 @@ def _format_params(
         if f not in parts:
             parts.append(f)
 
-    # sorted by regex, key is the name of param which describes absolute location of param.
-    parts.sort(key=lambda x: re.match(_DOC_FMT_PATTERN, x).group(2))
+    _sorted_by_abc(parts)
     fmt = _lines_from_join(parts)
     return fmt
+
+
+def _sorted_by_abc(seq: List) -> None:
+    """
+    sorted by regex and alphabet, and key is the name of param which describes absolute location of param.
+    :param seq:
+    :return: None
+    """
+    seq.sort(key=lambda x: re.match(_DOC_FMT_PATTERN, x).group(2))
 
 
 def _format_example(
@@ -141,7 +150,7 @@ class Formatter(object):
             title: str,
             group: Optional[str] = '',
             desc: Optional[str] = '',
-            perm: Optional[BasePermission] = Permission.NONE,
+            perm: Optional[BasePermission] = Permission.Nothing,
             mapping: Optional[Dict] = None,
             header: Optional[Dict] = None,
             params: Optional[Dict] = None,
@@ -174,13 +183,19 @@ class Formatter(object):
         self._error_json = error_json or {}
         self._error_params = error_params or {}
 
-        self._success_json = SlightParam(
-            success_json
-        ).slim or {}
+        if success_json:
+            self._success_json = SlightParam(
+                success_json
+            ).slim
+        else:
+            self._success_json = {}
 
-        self._success_params = NestParam(
-            success_params
-        ).single or {}
+        if success_params:
+            self._success_params = NestParam(
+                success_params
+            ).single
+        else:
+            self._success_params = {}
 
     @property
     def doc(self) -> str:
@@ -226,7 +241,7 @@ class Formatter(object):
         return '"""'
 
     def _fmt_declare(self) -> str:
-        fmt = ApiDoc.DECLARE.statement(
+        fmt = ApiDoc.Declare.statement(
             method=self._method,
             path=self._path,
             title=self._title,
@@ -234,15 +249,15 @@ class Formatter(object):
         return fmt
 
     def _fmt_description(self) -> str:
-        fmt = ApiDoc.DESC.explain(content=self._desc)
+        fmt = ApiDoc.Desc.explain(content=self._desc)
         return fmt
 
     def _fmt_group(self) -> str:
-        fmt = ApiDoc.GROUP.explain(content=self._group)
+        fmt = ApiDoc.Group.explain(content=self._group)
         return fmt
 
     def _fmt_permission(self) -> str:
-        fmt = ApiDoc.PERM.instruction(
+        fmt = ApiDoc.Perm.instruction(
             permit=self._perm,
         )
         return fmt
@@ -251,7 +266,7 @@ class Formatter(object):
         p = self._header
         fmt = _format_params(
             params=p,
-            formatter=ApiDoc.HEADER,
+            formatter=ApiDoc.Header,
             mapping=self._map,
         )
         return fmt
@@ -260,7 +275,7 @@ class Formatter(object):
         o = self._header
         fmt = _format_example(
             obj=o,
-            formatter=ApiDoc.HEADER,
+            formatter=ApiDoc.Header,
         )
         return fmt
 
@@ -268,7 +283,7 @@ class Formatter(object):
         p = self._params
         fmt = _format_params(
             params=p,
-            formatter=ApiDoc.PARAM,
+            formatter=ApiDoc.Param,
             mapping=self._map,
         )
         return fmt
@@ -277,7 +292,7 @@ class Formatter(object):
         o = self._params
         fmt = _format_example(
             obj=o,
-            formatter=ApiDoc.PARAM,
+            formatter=ApiDoc.Param,
         )
         return fmt
 
@@ -285,7 +300,7 @@ class Formatter(object):
         p = self._success_params
         fmt = _format_params(
             params=p,
-            formatter=ApiDoc.SUCCESS,
+            formatter=ApiDoc.Success,
             mapping=self._map,
         )
         return fmt
@@ -294,7 +309,7 @@ class Formatter(object):
         o = self._success_json
         fmt = _format_example(
             obj=o,
-            formatter=ApiDoc.SUCCESS,
+            formatter=ApiDoc.Success,
         )
         return fmt
 
@@ -302,7 +317,7 @@ class Formatter(object):
         p = self._error_params
         fmt = _format_params(
             params=p,
-            formatter=ApiDoc.ERROR,
+            formatter=ApiDoc.Error,
             mapping=self._map,
         )
         return fmt
@@ -311,6 +326,6 @@ class Formatter(object):
         o = self._error_json
         fmt = _format_example(
             obj=o,
-            formatter=ApiDoc.ERROR,
+            formatter=ApiDoc.Error,
         )
         return fmt

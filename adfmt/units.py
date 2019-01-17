@@ -37,7 +37,7 @@ class DocUnit(object):
             name: str,
             domain: str,
             group: Optional[str] = '',
-            perm: Optional[BasePermission] = Permission.NONE,
+            perm: Optional[BasePermission] = Permission.Nothing,
             mapping: Optional[Dict] = None,
             success_lazy: Optional[Callable] = lambda x: x,
             error_json: Optional[Dict] = None,
@@ -70,7 +70,7 @@ class DocUnit(object):
             title: str,
             group: Optional[str] = '',
             desc: Optional[str] = '',
-            perm: Optional[BasePermission] = Permission.NONE,
+            perm: Optional[BasePermission] = Permission.Nothing,
             mapping: Optional[Dict] = None,
             success_lazy: Optional[Callable] = lambda x: x,
             error_json: Optional[Dict] = None,
@@ -87,7 +87,7 @@ class DocUnit(object):
         # ready for Formatter
         _path = path
         _title = title
-        _method = RequestMethod.GET
+        _method = RequestMethod.Get
 
         _desc = desc
         _group = group or self._group
@@ -134,7 +134,7 @@ class DocUnit(object):
             title: str,
             group: Optional[str] = '',
             desc: Optional[str] = '',
-            perm: Optional[BasePermission] = Permission.NONE,
+            perm: Optional[BasePermission] = Permission.Nothing,
             mapping: Optional[Dict] = None,
             success_lazy: Optional[Callable] = lambda x: x,
             error_json: Optional[Dict] = None,
@@ -151,7 +151,7 @@ class DocUnit(object):
         # ready for Formatter
         _path = path
         _title = title
-        _method = RequestMethod.POST
+        _method = RequestMethod.Post
 
         _desc = desc
         _group = group or self._group
@@ -214,7 +214,7 @@ class DocUnit(object):
         That means design an original and simple way of using with none of predicting to what and how user using it.
 
         :param directory: instead of taking a relative path, an absolute folder path is required.
-        :return:
+        :return: None
         """
         annotation = '#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n\n'
         code = self.output
