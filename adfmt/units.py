@@ -6,6 +6,7 @@ from typing import (
     Dict,
     Callable,
     Any,
+    Sequence,
 )
 
 import os
@@ -13,7 +14,10 @@ import os
 import urllib.parse
 import requests
 
-from .format import Formatter
+from .formats import (
+    Formatter,
+    MulParamsFormatter,
+)
 
 from .enums import (
     RequestMethod,
@@ -39,8 +43,12 @@ class DocUnit(object):
             group: Optional[str] = '',
             perm: Optional[BasePermission] = Permission.Nothing,
             mapping: Optional[Dict] = None,
+            header_group: Optional[str] = '',
+            params_group: Optional[str] = '',
+            success_group: Optional[str] = '',
+            error_group: Optional[str] = '',
             success_lazy: Optional[Callable] = lambda x: x,
-            error_json: Optional[Dict] = None,
+            error_example: Optional[Dict] = None,
             error_params: Optional[Dict] = None,
     ) -> None:
         if not isinstance(name, str) or name == '':
@@ -49,31 +57,43 @@ class DocUnit(object):
             )
         self._name = name
 
-        if not isinstance(domain, str):
+        if not isinstance(domain, str) or domain == '':
             raise InvalidValueError(
-                'Parameter `domain` should be a string.'
+                'Parameter `domain` should be a string except "".'
             )
         self._domain = domain
-
+        # preset default attributes for request-methods: get and post
         self._group = group
         self._perm = perm
         self._mapping = mapping
         self._success_lazy = success_lazy
-        self._error_json = error_json or {}
+        self._error_example = error_example or {}
         self._error_params = error_params or {}
-
-        self._doc_methods = []
+        # group name
+        self._header_group = header_group
+        self._params_group = params_group
+        self._success_group = success_group
+        self._error_group = error_group
+        # repeated doc methods are useless, so use the set container.
+        self._doc_methods = set()
 
     def get(
             self,
             path: str,
             title: str,
+            # optional
             group: Optional[str] = '',
             desc: Optional[str] = '',
             perm: Optional[BasePermission] = Permission.Nothing,
             mapping: Optional[Dict] = None,
+            # group name
+            header_group: Optional[str] = '',
+            params_group: Optional[str] = '',
+            success_group: Optional[str] = '',
+            error_group: Optional[str] = '',
+            # params and examples
             success_lazy: Optional[Callable] = lambda x: x,
-            error_json: Optional[Dict] = None,
+            error_example: Optional[Dict] = None,
             error_params: Optional[Dict] = None,
             **kwargs
     ) -> Any:
@@ -83,6 +103,164 @@ class DocUnit(object):
             url=url,
             **kwargs,
         )
+        # ready for Formatter
+        _path = path
+        _title = title
+        _method = RequestMethod.Get
+
+        _desc = desc
+        _group = group or self._group
+        _perm = perm or self._perm
+
+        _mapping = mapping or self._mapping
+
+        _header = kwargs.get('headers', {})
+        _header_group = header_group or self._header_group
+
+        _params = {}
+        _params.update(kwargs.get('params', {}))
+        _params_group = params_group or self._params_group
+
+        _success_lazy = success_lazy or self._success_lazy
+        _success_params = _success_lazy(r.json())
+        _success_example = r.json()
+        _success_group = success_group or self._success_group
+
+        _error_params = error_params or self._error_params
+        _error_example = error_example or self._error_example
+        _error_group = error_group or self._error_group
+
+        doc = Formatter(
+            path=_path,
+            method=_method,
+            title=_title,
+            group=_group,
+            desc=_desc,
+            perm=_perm,
+            mapping=_mapping,
+            header=_header,
+            header_group=_header_group,
+            params=_params,
+            params_group=_params_group,
+            success_example=_success_example,
+            success_params=_success_params,
+            success_group=_success_group,
+            error_example=_error_example,
+            error_params=_error_params,
+            error_group=_error_group,
+        ).doc
+
+        self._doc_methods.add(doc)
+
+        return r, doc
+
+    def post(
+            self,
+            path: str,
+            title: str,
+            group: Optional[str] = '',
+            desc: Optional[str] = '',
+            perm: Optional[BasePermission] = Permission.Nothing,
+            mapping: Optional[Dict] = None,
+            header_group: Optional[str] = '',
+            params_group: Optional[str] = '',
+            success_group: Optional[str] = '',
+            error_group: Optional[str] = '',
+            success_lazy: Optional[Callable] = lambda x: x,
+            error_example: Optional[Dict] = None,
+            error_params: Optional[Dict] = None,
+            **kwargs
+    ) -> Any:
+        # using requests-post
+        url = urllib.parse.urljoin(self._domain, path)
+        r = requests.post(
+            url=url,
+            **kwargs,
+        )
+        # ready for Formatter
+        _path = path
+        _title = title
+        _method = RequestMethod.Post
+
+        _desc = desc
+        _group = group or self._group
+        _perm = perm or self._perm
+
+        _mapping = mapping or self._mapping
+
+        _header = kwargs.get('headers', {})
+        _header_group = header_group or self._header_group
+
+        _params = {}
+        _params.update(kwargs.get('data', {}))
+        _params.update(kwargs.get('json', {}))
+        _params_group = params_group or self._params_group
+
+        _success_lazy = success_lazy or self._success_lazy
+        _success_params = _success_lazy(r.json())
+        _success_example = r.json()
+        _success_group = success_group or self._success_group
+
+        _error_params = error_params or self._error_params
+        _error_example = error_example or self._error_example
+        _error_group = error_group or self._error_group
+
+        doc = Formatter(
+            path=_path,
+            method=_method,
+            title=_title,
+            group=_group,
+            desc=_desc,
+            perm=_perm,
+            mapping=_mapping,
+            header=_header,
+            header_group=_header_group,
+            params=_params,
+            params_group=_params_group,
+            success_example=_success_example,
+            success_params=_success_params,
+            success_group=_success_group,
+            error_example=_error_example,
+            error_params=_error_params,
+            error_group=_error_group,
+        ).doc
+
+        self._doc_methods.add(doc)
+
+        return r, doc
+
+    def get_many(
+            self,
+            path: str,
+            title: str,
+            mul_kw: Optional[Sequence[Dict]] = None,
+            group: Optional[str] = '',
+            desc: Optional[str] = '',
+            perm: Optional[BasePermission] = Permission.Nothing,
+            mapping: Optional[Dict] = None,
+            mul_groups: Optional[Sequence[str]] = None,
+            mul_header_groups: Optional[Sequence[str]] = None,
+            mul_params_groups: Optional[Sequence[str]] = None,
+            mul_success_groups: Optional[Sequence[str]] = None,
+            mul_error_groups: Optional[Sequence[str]] = None,
+            success_lazy: Optional[Callable] = lambda x: x,
+            error_example: Optional[Dict] = None,
+            error_params: Optional[Dict] = None,
+    ) -> Any:
+        """"""
+        many_response = []
+        for m in mul_kw:
+            # using requests-post
+            url = urllib.parse.urljoin(self._domain, path)
+            r = requests.get(
+                url=url,
+                **m,
+            )
+
+            many_response.append(r)
+
+
+
 
         # ready for Formatter
         _path = path
@@ -96,109 +274,30 @@ class DocUnit(object):
         _mapping = mapping or self._mapping
 
         _header = kwargs.get('headers', {})
+        _header_group = header_group or self._header_group
 
         _params = {}
         _params.update(kwargs.get('params', {}))
+        _params_group = params_group or self._params_group
 
         _success_lazy = success_lazy or self._success_lazy
         _success_params = _success_lazy(r.json())
-        _success_json = r.json()
+        _success_example = r.json()
+        _success_group = success_group or self._success_group
 
         _error_params = error_params or self._error_params
-        _error_json = error_json or self._error_json
+        _error_example = error_example or self._error_example
+        _error_group = error_group or self._error_group
 
-        doc = Formatter(
-            path=_path,
-            method=_method,
-            title=_title,
-            group=_group,
-            desc=_desc,
-            perm=_perm,
-            mapping=_mapping,
-            header=_header,
-            params=_params,
-            success_json=_success_json,
-            success_params=_success_params,
-            error_json=_error_json,
-            error_params=_error_params,
-        ).doc
-
-        if doc not in self._doc_methods:
-            self._doc_methods.append(doc)
-
-        return r
-
-    def post(
-            self,
-            path: str,
-            title: str,
-            group: Optional[str] = '',
-            desc: Optional[str] = '',
-            perm: Optional[BasePermission] = Permission.Nothing,
-            mapping: Optional[Dict] = None,
-            success_lazy: Optional[Callable] = lambda x: x,
-            error_json: Optional[Dict] = None,
-            error_params: Optional[Dict] = None,
-            **kwargs
-    ) -> Any:
-        # using requests-post
-        url = urllib.parse.urljoin(self._domain, path)
-        r = requests.post(
-            url=url,
-            **kwargs,
-        )
-
-        # ready for Formatter
-        _path = path
-        _title = title
-        _method = RequestMethod.Post
-
-        _desc = desc
-        _group = group or self._group
-        _perm = perm or self._perm
-
-        _mapping = mapping or self._mapping
-
-        _header = kwargs.get('headers', {})
-
-        _params = {}
-        _params.update(kwargs.get('data', {}))
-        _params.update(kwargs.get('json', {}))
-
-        _success_lazy = success_lazy or self._success_lazy
-        _success_params = _success_lazy(r.json())
-        _success_json = r.json()
-
-        _error_params = error_params or self._error_params
-        _error_json = error_json or self._error_json
-
-        doc = Formatter(
-            path=_path,
-            method=_method,
-            title=_title,
-            group=_group,
-            desc=_desc,
-            perm=_perm,
-            mapping=_mapping,
-            header=_header,
-            params=_params,
-            success_json=_success_json,
-            success_params=_success_params,
-            error_json=_error_json,
-            error_params=_error_params,
-        ).doc
-
-        if doc not in self._doc_methods:
-            self._doc_methods.append(doc)
-
-        return r
 
     @property
     def output(self) -> str:
         case_name = _camel_cased_word(self._name)
-
         statement = f'class ApiDoc{case_name}(object):'
-        body = '\n\n    @staticmethod\n'.join(set(self._doc_methods))
+
+        methods = list(self._doc_methods)
+        methods.sort(key=lambda x: x)
+        body = '\n\n    @staticmethod\n'.join(methods)
 
         code = statement + body
         return code
@@ -211,9 +310,9 @@ class DocUnit(object):
         It's hard to keep a balance between design of original intention and developer custom,
         so the simplest way is 'do nothing'.
 
-        That means design an original and simple way of using with none of predicting to what and how user using it.
+        That means design an original and simple way which with none of predicting to what and how user using.
 
-        :param directory: instead of taking a relative path, an absolute folder path is required.
+        :param directory: instead of taking a relative path or name, an absolute folder path is required.
         :return: None
         """
         annotation = '#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n\n'

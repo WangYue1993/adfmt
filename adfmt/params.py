@@ -18,7 +18,7 @@ __all__ = [
 ]
 
 
-class MappingError(Exception):
+class ParamsTypeError(Exception):
     pass
 
 
@@ -50,7 +50,7 @@ class NestParam(object):
             params: Dict,
     ) -> None:
         if not isinstance(params, dict):
-            raise MappingError(
+            raise ParamsTypeError(
                 'Parameter `params` expected a "dict", but other was given.'
             )
         self._nest = params
@@ -116,7 +116,7 @@ class SlightParam(object):
             params: Dict,
     ) -> None:
         if not isinstance(params, dict):
-            raise MappingError(
+            raise ParamsTypeError(
                 'Parameter `params` expected a "dict", but other was given.'
             )
         self._params = params

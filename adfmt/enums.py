@@ -31,8 +31,10 @@ For example:
 ```
 
 The name of lightly red color is written by all uppercase words, it is similar to the convention of constant.
-For Python Code Style Guide, I think it may be the reason why using uppercase is that
-enum is very similar to constant and more safe than constant, so it should use the similar style guide with constant.
+
+For Python Code Style Guide, it may be the reason why using uppercase:
+enum is very similar to constant and more safe than constant,
+so it should use the similar style guide with constant.
 
 But, enum is enum, not constant.
 We can easily distinguish name of enum class, constant and variable,
@@ -47,6 +49,8 @@ And I think it will reduce consuming of energy with typing code. :)
 """
 
 from enum import Enum
+
+from typing import Optional
 
 __all__ = [
     'RequestMethod',
@@ -66,7 +70,7 @@ class RequestMethod(_StrEnum):
     Post = 'post'
 
     @property
-    def format(self) -> str:
+    def formatted(self) -> str:
         return '{%s}' % self.value
 
 
@@ -94,7 +98,7 @@ class ParamTyping(_StrEnum):
     List = 'Array'
 
     @property
-    def format(self) -> str:
+    def formatted(self) -> str:
         return '{%s}' % self.value
 
 
@@ -110,7 +114,7 @@ class ApiDoc(_StrEnum):
     ) -> str:
         f = [
             self.value,
-            method.format,
+            method.formatted,
             path,
             title,
         ]
@@ -152,10 +156,11 @@ class ApiDoc(_StrEnum):
     def example(
             self,
             content: str,
+            name: str,
     ) -> str:
-        return '%sExample {json} %s-example\n%s' % (
+        return '%sExample {json} %s\n%s' % (
             self.value,
-            self.name.lower(),
+            name,
             content,
         )
 
@@ -164,11 +169,14 @@ class ApiDoc(_StrEnum):
             typing: ParamTyping,
             name: str,
             explain: str,
+            group: str,
     ) -> str:
         f = [
             self.value,
-            typing.format,
+            group,
+            typing.formatted,
             name,
             explain,
         ]
+
         return ' '.join(f)
