@@ -12,8 +12,8 @@ from typing import (
 import copy
 
 __all__ = [
-    'NestParam',
-    'SlightParam',
+    'FlatMap',
+    'SingleMap',
     'ParamsMap',
 ]
 
@@ -22,25 +22,24 @@ class ParamsTypeError(Exception):
     pass
 
 
-class NestParam(object):
+class FlatMap(object):
     """
-    Usually params (mapping) the api returned is a nest collection,
-    which some child-elements may be collections too.
+    params (map) api returned is a nest collection usually,
+    which some child elements may be collections too.
 
     It's not 'friendly' for writing apiDoc,
-    the complicated layer location of all params need to writing manually.
+    the complicated locations information of all params need to be writing manually.
 
-    The `NestParam` will convert 'nest' to 'simple'.
+    The `FlatMap` will convert 'nest' to 'flat'.
 
     During converting:
-        > The param name will become a complete-layer-location,
-          which expanding a relative-name into a complete-name.
+        > The param name (key) will be expanding into a complete layer location.
 
-        > Value of param will be replaced by a default-typing-value for itself.
+        > Value of param will be replaced by a default value of type for itself.
 
     eg:
-    >>> p = NestParam({'mike': {'name': 'mike', 'score': [{'math': 90, 'eng': 85}]}})
-    >>> p.single
+    >>> p = FlatMap({'mike': {'name': 'mike', 'score': [{'math': 90, 'eng': 85}]}})
+    >>> p.flat
     {'mike.name': '', 'mike.score.0.math': 0, 'mike.score.0.eng': 0, 'mike.score.0': {}, 'mike.score': [], 'mike': {}}
     >>>
     """
@@ -55,12 +54,12 @@ class NestParam(object):
             )
         self._nest = params
 
-        self._single = {}
+        self._flat = {}
 
     @property
-    def single(self) -> Dict:
+    def flat(self) -> Dict:
         self._recur_map(affix='', mapping=self._nest)
-        return self._single
+        return self._flat
 
     def _recur(
             self,
@@ -73,7 +72,7 @@ class NestParam(object):
         if isinstance(value, (tuple, list)):
             self._recur_seq(affix=name, sequence=value)
 
-        self._single[name] = type(value)()
+        self._flat[name] = type(value)()
 
     def _recur_map(
             self,
@@ -97,16 +96,16 @@ class NestParam(object):
             self._recur(name=name, value=sequence[0])
 
 
-class SlightParam(object):
+class SingleMap(object):
     """
-    Sometime, the response-params are complicated.
-    Lots of child elements repeated with a same construct or a same typing-value confused the developer to look up.
+    Sometime, the response params (map) are complicated.
+    Lots of child elements repeated with a same construct or a same type value disturb the developer to look up.
 
-    So complicated-params should be 'slim', which means removing the repeated elements.
+    So complicated params should be 'slim', which means removing the repeated elements.
 
     eg:
-    >>> p = SlightParam({'books': ['b1', 'b2', 'b3', ...]})
-    >>> p.slim
+    >>> p = SingleMap({'books': ['b1', 'b2', 'b3', ...]})
+    >>> p.single
     {'books': ['b1']}
     >>>
     """
@@ -122,7 +121,7 @@ class SlightParam(object):
         self._params = params
 
     @property
-    def slim(self) -> Dict:
+    def single(self) -> Dict:
         self._recur_map(
             location_chain=[],
             mapping=self._params
@@ -200,30 +199,30 @@ class SlightParam(object):
             sequence: Sequence,
     ) -> None:
         if sequence:
-            single = sequence[:1]
+            flat = sequence[:1]
 
-            self.__replace_to_single(
+            self.__replace_to_flat(
                 location_chain=location_chain,
-                single=single,
+                flat=flat,
             )
 
             self._recur(
                 location_chain=location_chain,
-                child=single[0],
+                child=flat[0],
                 key=0,
             )
 
-    def __replace_to_single(
+    def __replace_to_flat(
             self,
             location_chain: List,
-            single: Sequence,
+            flat: Sequence,
     ) -> Any:
         p = copy.deepcopy(self._params)
 
         # generate a get-item expression by location-chain
         get_exp = 'p' + ''.join([f'[{key}]' for key in location_chain])
-        # set a new single sequence to collection
-        set_exp = f'{get_exp} = {single}'
+        # set a new flat sequence to collection
+        set_exp = f'{get_exp} = {flat}'
         exec(set_exp)
 
         self._params = p

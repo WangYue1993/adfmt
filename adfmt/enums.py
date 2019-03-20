@@ -3,49 +3,45 @@
 """
 In the beginning, all of enum members name were written in uppercase letters.
 
-The reason for using uppercase letters which given on Python enum's doc is that making it easily to distinguish difference
-between members of enumerations and methods of enum class.
-
-However, you may want to declare a name with rich expression sometime.
-
-For example:
-```
->>> # ver.1
->>> class Color(Enum):
-...     RED = 1
-...     GREEN = 2
-...     BLUE = 3
->>>
->>> red = Color.RED
->>>
->>> # You may want add other colors.
->>> # And you should using uppercase.
->>> # ver.2
->>> class Color(Enum):
-...     RED = 1
-...     GREEN = 2
-...     BLUE = 3
-...     LIGHT_RED = 4   # it looks a little different
->>>
->>> light_red = Color.LIGHT_RED
-```
-
-The name of lightly red color is written by all uppercase words, it is similar to the convention of constant.
-
 For Python Code Style Guide, it may be the reason why using uppercase:
-enum is very similar to constant and more safe than constant,
+enum is very similar to constant and more safe,
 so it should use the similar style guide with constant.
 
-But, enum is enum, not constant.
-We can easily distinguish name of enum class, constant and variable,
-the only problem is that how we can make a difference between enum members and enum class' methods.
+However, enum is enum, not constant.
+the problem for enum member is that how we can make a difference between enum members and enum class methods.
 
-There are many ways to solve it, the simple way is using 'Pascal Case' but not 'Upper Case' for enum member name.
+There are many ways to solve it, the simple way is using 'Pascal Case' but not 'Upper Case'.
 
-The 'Pascal Case' word has stronger readability than 'Upper Case' word.
-eg: `ConstantConvention` vs `CONSTANT_CONVENTION`.
+The 'Pascal Case' word has a stronger readability than 'Upper Case' word.
+eg: `ConstantConventionReadabilityIsWorse` vs `CONSTANT_CONVENTION_READABILITY_IS_WORSE`.
 
-And I think it will reduce consuming of energy with typing code. :)
+Sometime if enum members and constant both use uppercase to declare, it's hard to distinguish them.
+
+eg:
+```color.py
+RED = 1
+BLUE = 2
+GREEN = 3
+```
+
+```subject.py
+import color
+from enum import Enum
+
+class Subject(Enum):
+    MATH = 1
+    ENG = 2
+    ART = 3
+
+
+def location_red_math():
+    s = Subject.MATH.value
+
+    # When you take constant as enum, a mistake will occur below called.
+    c = color.RED.value
+
+    return s * c
+```
 """
 
 from enum import Enum

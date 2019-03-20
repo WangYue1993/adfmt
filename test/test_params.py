@@ -4,8 +4,8 @@
 import unittest
 
 from adfmt.params import (
-    NestParam,
-    SlightParam,
+    FlatMap,
+    SingleMap,
     ParamsMap,
     ParamsTypeError,
 )
@@ -17,23 +17,23 @@ class TestNestToSingle(unittest.TestCase):
     def test_nest_param_1(self) -> None:
         p = self.p
 
-        n1 = NestParam(params=p)
-        self.assertEqual(n1.single, {})
+        n1 = FlatMap(params=p)
+        self.assertEqual(n1.flat, {})
 
     def test_nest_param_2(self) -> None:
         p = self.p
         p.update(a='a')
 
-        n2 = NestParam(params=p)
-        self.assertEqual(n2.single, {'a': ''})
+        n2 = FlatMap(params=p)
+        self.assertEqual(n2.flat, {'a': ''})
 
     def test_nest_param_3(self) -> None:
         p = self.p
         p.update(b=[1, 2, 3])
 
-        n3 = NestParam(params=p)
+        n3 = FlatMap(params=p)
         self.assertEqual(
-            n3.single,
+            n3.flat,
             {
                 'a': '',
                 'b': [],
@@ -45,9 +45,9 @@ class TestNestToSingle(unittest.TestCase):
         p = self.p
         p.update(c=dict(c1='c1'))
 
-        n4 = NestParam(params=p)
+        n4 = FlatMap(params=p)
         self.assertEqual(
-            n4.single,
+            n4.flat,
             {
                 'a': '',
                 'b': [],
@@ -66,9 +66,9 @@ class TestNestToSingle(unittest.TestCase):
             ]
         )
 
-        n5 = NestParam(params=p)
+        n5 = FlatMap(params=p)
         self.assertEqual(
-            n5.single,
+            n5.flat,
             {
                 'a': '',
                 'b': [],
@@ -92,8 +92,8 @@ class TestNestToSingle(unittest.TestCase):
                  )
         ]))
 
-        n6 = NestParam(params=p)
-        self.assertEqual(n6.single, {
+        n6 = FlatMap(params=p)
+        self.assertEqual(n6.flat, {
             'a': '',
             'b.0': 0,
             'b': [],
@@ -118,7 +118,7 @@ class TestNestToSingle(unittest.TestCase):
     def test_exception_value_error(self) -> None:
         self.assertRaises(
             ParamsTypeError,
-            NestParam,
+            FlatMap,
             params='',
         )
 
@@ -129,15 +129,15 @@ class TestComplicatedToSlight(unittest.TestCase):
     def test_slight_param_1(self) -> None:
         p = self.p
 
-        s1 = SlightParam(params=p)
-        self.assertEqual(s1.slim, {})
+        s1 = SingleMap(params=p)
+        self.assertEqual(s1.single, {})
 
     def test_slight_param_2(self) -> None:
         p = self.p
         p.update(a=[1, 2, 3])
 
-        s2 = SlightParam(params=p)
-        self.assertEqual(s2.slim, {'a': [1]})
+        s2 = SingleMap(params=p)
+        self.assertEqual(s2.single, {'a': [1]})
 
     def test_slight_param_3(self) -> None:
         p = self.p
@@ -147,9 +147,9 @@ class TestComplicatedToSlight(unittest.TestCase):
             [7, 8, 9],
         ])
 
-        s3 = SlightParam(params=p)
+        s3 = SingleMap(params=p)
         self.assertEqual(
-            s3.slim,
+            s3.single,
             {
                 'a': [1],
                 'b': [[1]],
@@ -163,9 +163,9 @@ class TestComplicatedToSlight(unittest.TestCase):
             dict(c3='c3', c4=[3, 4]),
         ])
 
-        s4 = SlightParam(params=p)
+        s4 = SingleMap(params=p)
         self.assertEqual(
-            s4.slim,
+            s4.single,
             {
                 'a': [1],
                 'b': [[1]],
@@ -191,9 +191,9 @@ class TestComplicatedToSlight(unittest.TestCase):
             ),
         )
 
-        s5 = SlightParam(params=p)
+        s5 = SingleMap(params=p)
         self.assertEqual(
-            s5.slim,
+            s5.single,
             {
                 'a': [1],
                 'b': [[1]],
@@ -208,7 +208,7 @@ class TestComplicatedToSlight(unittest.TestCase):
     def test_exception_value_error(self) -> None:
         self.assertRaises(
             ParamsTypeError,
-            SlightParam,
+            SingleMap,
             params='',
         )
 

@@ -24,8 +24,8 @@ from .enums import (
 )
 
 from .params import (
-    NestParam,
-    SlightParam,
+    FlatMap,
+    SingleMap,
 )
 
 __all__ = [
@@ -173,7 +173,7 @@ def _fixed_path(
     """
     Url path will be matched by Re-pattern expression to find out the legal path wanted,
 
-    Double slashes '//' (or more) will be replaced by single.
+    Double slashes '//' (or more) will be replaced by flat.
     """
     replaced = re.sub(r'/+', '/', path)
 
@@ -265,12 +265,12 @@ class Formatter(object):
         self._error_params = error_params or {}
 
         if success_example:
-            self._success_example = SlightParam(success_example).slim
+            self._success_example = SingleMap(success_example).single
         else:
             self._success_example = {}
 
         if success_params:
-            self._success_params = NestParam(success_params).single
+            self._success_params = FlatMap(success_params).flat
         else:
             self._success_params = {}
 

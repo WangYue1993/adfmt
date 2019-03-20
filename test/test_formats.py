@@ -15,7 +15,7 @@ class TestFormatter(unittest.TestCase):
     def test_post(self) -> None:
         pass
 
-    def test_single_response(self) -> None:
+    def test_flat_response(self) -> None:
         pass
 
     def test_nest_response(self) -> None:
